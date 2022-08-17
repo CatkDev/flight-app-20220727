@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FLIGHT } from '../flight';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { FlightService } from '../Services/Flight-Service/flight.service';
+import { DummyFlightService } from '../Services/Dummy-Flight-Service/dummy-flight.service';
 
 @Component({
     selector: 'app-flight-search',
@@ -19,7 +20,10 @@ export class FlightSearchComponent implements OnInit {
         5: true
     };
 
-    constructor(private http: HttpClient) {
+    constructor(private flightService: FlightService) {
+        if (flightService instanceof DummyFlightService) {
+            console.log('Eigentlich bin ich ein DummyFlightService');
+        }
     }
 
     ngOnInit(): void {
@@ -27,24 +31,33 @@ export class FlightSearchComponent implements OnInit {
 
     search(): void {
 
-        const url = 'http://demo.ANGULARarchitects.io/api/flight';
+        this.flightService.find(this.from, this.to).subscribe({
+            next: (flights) => {
+                this.flights = flights;
+            },
+            error: (err => {
+                console.error('Error', err);
+            })
+        });
 
-        const headers = new HttpHeaders()
-            .set('Accept', 'application/json');
-
-        const params = new HttpParams()
-            .set('from', this.from)
-            .set('to', this.to);
-
-        this.http.get<FLIGHT[]>(url, {headers, params})
-            .subscribe({
-                next: (flights) => {
-                    this.flights = flights;
-                },
-                error: (err => {
-                    console.error('Error', err);
-                })
-            });
+        // const url = 'http://demo.ANGULARarchitects.io/api/flight';
+        //
+        // const headers = new HttpHeaders()
+        //     .set('Accept', 'application/json');
+        //
+        // const params = new HttpParams()
+        //     .set('from', this.from)
+        //     .set('to', this.to);
+        //
+        // this.http.get<FLIGHT[]>(url, {headers, params})
+        //     .subscribe({
+        //         next: (flights) => {
+        //             this.flights = flights;
+        //         },
+        //         error: (err => {
+        //             console.error('Error', err);
+        //         })
+        //     });
     }
 
     select(f: FLIGHT): void {
